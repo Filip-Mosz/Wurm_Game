@@ -1,7 +1,9 @@
-﻿#include <SFML/Graphics.hpp>
+﻿#include "C:/SFML/include/SFML/Graphics.hpp"
 #include <deque>
 #include <random>
 #include <ranges>
+#include <algorithm>
+
 
 constexpr int gridWidth = 40;
 constexpr int gridHeight = 30;
@@ -10,7 +12,7 @@ constexpr int windowWidth = gridWidth * cellSize;
 constexpr int windowHeight = gridHeight * cellSize;
 
 int main() {
-    sf::RenderWindow window( sf::VideoMode({ (windowWidth),(windowHeight) }), "Wurm the Game" );
+    sf::RenderWindow window( sf::VideoMode( (windowWidth),(windowHeight) ), "Wurm the Game" );
     window.setFramerateLimit(30);
 
     sf::Clock clock;
@@ -21,9 +23,9 @@ int main() {
     Snake snake(food);
 
     while (window.isOpen()) {
-        while (auto eventOpt = window.pollEvent()) { //błąd
-            const auto& event = *eventOpt;
-            if (event.is<sf::Event::Closed>()) { //błąd
+        sf::Event event;
+        while (auto eventOpt = window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) { 
                 window.close();
             }
         }
@@ -85,7 +87,7 @@ public:
     void Respawn(const std::deque<sf::Vector2i>& snakeSegments) {
         do {
             position = { distX(rng), distY(rng) };
-        } while (std::ranges::find(snakeSegments, position) != snakeSegments.end());
+        } while (std::find(snakeSegments.begin(), snakeSegments.end(), position) != snakeSegments.end());
     }
 
 private:
