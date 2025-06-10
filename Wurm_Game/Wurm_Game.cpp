@@ -90,7 +90,7 @@ public:
     [[nodiscard]] bool IsAlive() const { return alive; }
 
 private:
-    std::deque<sf::Vector2i> segments;
+    std::deque<sf::Vector2i> segments{3};
     Direction dir = Direction::Right;
     Food& food;
     bool alive = true;
@@ -165,6 +165,10 @@ int main() {
     pauseText.setFillColor(sf::Color::Green);
     pauseText.setPosition(300, 250);
 
+    sf::Text gameOver("KONIEC GRY", font, 48);
+    pauseText.setFillColor(sf::Color::Red);
+    pauseText.setPosition(300, 250);
+
     Food food;
     Snake snake(food);
 
@@ -186,7 +190,8 @@ int main() {
             if (timer < delay) continue;
             timer = 0.f;
 
-            if (!snake.IsAlive()) continue;
+            if (snake.IsAlive()) { window.draw(gameOver); }
+            if (!snake.IsAlive()) { continue; }
 
             // update game objects
             snake.Update();
