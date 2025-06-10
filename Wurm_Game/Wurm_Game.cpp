@@ -1,12 +1,13 @@
-﻿#include "C:/SFML/include/SFML/Graphics.hpp"
+﻿#include <SFML/Graphics.hpp>
 #include <deque>
 #include <random>
 #include <ranges>
 #include <algorithm>
+#include <iostream>
 
 
-constexpr int gridWidth = 40;
-constexpr int gridHeight = 30;
+constexpr int gridWidth = 80;
+constexpr int gridHeight = 60;
 constexpr int cellSize = 10;
 constexpr int windowWidth = gridWidth * cellSize;
 constexpr int windowHeight = gridHeight * cellSize;
@@ -33,7 +34,7 @@ public:
 
     void Render(sf::RenderWindow& window) override {
         sf::RectangleShape cell{ sf::Vector2f(cellSize - 1.f, cellSize - 1.f) };
-        cell.setFillColor(sf::Color::Red);
+        cell.setFillColor(sf::Color::Green);
         cell.setPosition(sf::Vector2f(
             static_cast<float>(position.x * cellSize),
             static_cast<float>(position.y * cellSize)
@@ -76,7 +77,7 @@ public:
 
     void Render(sf::RenderWindow& window) override {
         sf::RectangleShape cell{ sf::Vector2f(cellSize - 1.f, cellSize - 1.f) };
-        cell.setFillColor(sf::Color::Green);
+        cell.setFillColor(sf::Color::Magenta);
         for (const auto& segment : segments) {
             cell.setPosition(sf::Vector2f(
                 static_cast<float>(segment.x * cellSize),
@@ -93,6 +94,7 @@ private:
     Direction dir = Direction::Right;
     Food& food;
     bool alive = true;
+    bool move = true;
 
     void HandleInput() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && dir != Direction::Down) {
@@ -113,6 +115,7 @@ private:
         auto head = segments.front();
         int x = head.x;
         int y = head.y;
+
         switch (dir) {
         case Direction::Up:    --y; break;
         case Direction::Down:  ++y; break;
@@ -150,6 +153,17 @@ int main() {
     sf::Clock clock;
     float timer = 0;
     constexpr float delay = 0.1f;
+    
+    bool isPaused = false;
+    sf::Font font;
+    if (!font.loadFromFile("arial.ttf")) {
+        std::cerr << "Nie mozna zaladowac czcionki!" << std::endl;
+        return -1;
+    }
+
+    sf::Text pauseText("PAUZA", font, 48);
+    pauseText.setFillColor(sf::Color::Green);
+    pauseText.setPosition(300, 250);
 
     Food food;
     Snake snake(food);
@@ -160,22 +174,35 @@ int main() {
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
+
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
+            {
+                isPaused = !isPaused;
+            }
         }
 
-        timer += clock.restart().asSeconds();
-        if (timer < delay) continue;
-        timer = 0.f;
+        if (!isPaused) {
+            timer += clock.restart().asSeconds();
+            if (timer < delay) continue;
+            timer = 0.f;
 
-        if (!snake.IsAlive()) continue;
+            if (!snake.IsAlive()) continue;
 
-        // update game objects
-        snake.Update();
-        food.Update();
+            // update game objects
+            snake.Update();
+            food.Update();
+        }
 
         // render all
         window.clear(sf::Color::Black);
         snake.Render(window);
         food.Render(window);
+
+        if (isPaused)
+        {
+            window.draw(pauseText);
+        }
+
         window.display();
     }
 
