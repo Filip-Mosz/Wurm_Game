@@ -11,45 +11,6 @@ constexpr int cellSize = 10;
 constexpr int windowWidth = gridWidth * cellSize;
 constexpr int windowHeight = gridHeight * cellSize;
 
-int main() {
-    sf::RenderWindow window( sf::VideoMode( (windowWidth),(windowHeight) ), "Wurm the Game" );
-    window.setFramerateLimit(30);
-
-    sf::Clock clock;
-    float timer = 0;
-    constexpr float delay = 0.1f;
-
-    Food food;
-    Snake snake(food);
-
-    while (window.isOpen()) {
-        sf::Event event;
-        while (auto eventOpt = window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) { 
-                window.close();
-            }
-        }
-
-        timer += clock.restart().asSeconds();
-        if (timer < delay) continue;
-        timer = 0.f;
-
-        if (!snake.IsAlive()) continue;
-
-        // update game objects
-        snake.Update();
-        food.Update();
-
-        // render all
-        window.clear(sf::Color::Black);
-        snake.Render(window);
-        food.Render(window);
-        window.display();
-    }
-
-    return 0;
-}
-
 class GameObject {
 public:
     virtual void Update() = 0;
@@ -96,8 +57,6 @@ private:
     std::uniform_int_distribution<> distX;
     std::uniform_int_distribution<> distY;
 };
-
-
 
 
 enum class Direction { Up, Down, Left, Right };
@@ -183,3 +142,42 @@ private:
         }
     }
 };
+
+int main() {
+    sf::RenderWindow window(sf::VideoMode((windowWidth), (windowHeight)), "Wurm the Game");
+    window.setFramerateLimit(30);
+
+    sf::Clock clock;
+    float timer = 0;
+    constexpr float delay = 0.1f;
+
+    Food food;
+    Snake snake(food);
+
+    while (window.isOpen()) {
+        sf::Event event;
+        while (auto eventOpt = window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+            }
+        }
+
+        timer += clock.restart().asSeconds();
+        if (timer < delay) continue;
+        timer = 0.f;
+
+        if (!snake.IsAlive()) continue;
+
+        // update game objects
+        snake.Update();
+        food.Update();
+
+        // render all
+        window.clear(sf::Color::Black);
+        snake.Render(window);
+        food.Render(window);
+        window.display();
+    }
+
+    return 0;
+}
