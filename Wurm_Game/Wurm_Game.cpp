@@ -4,6 +4,8 @@
 #include <ranges>
 #include <algorithm>
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 
 constexpr int gridWidth = 80;
@@ -94,7 +96,6 @@ private:
     Direction dir = Direction::Right;
     Food& food;
     bool alive = true;
-    bool move = true;
 
     void HandleInput() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && dir != Direction::Down) {
@@ -146,6 +147,28 @@ private:
     }
 };
 
+void showSplashScreen(sf::RenderWindow& window, const sf::Font& font)
+{
+    sf::Text splashText("Witaj w \"Wurm, the game\"!", font, 48);
+    splashText.setFillColor(sf::Color::White);
+    splashText.setPosition(120, 250);
+
+    sf::Clock splashClock;
+    while (splashClock.getElapsedTime().asSeconds() < 3.0f && window.isOpen())
+    {
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        window.clear(sf::Color::Black);
+        window.draw(splashText);
+        window.display();
+    }
+}
+
 int main() {
     sf::RenderWindow window(sf::VideoMode((windowWidth), (windowHeight)), "Wurm the Game");
     window.setFramerateLimit(30);
@@ -155,6 +178,7 @@ int main() {
     constexpr float delay = 0.1f;
     
     bool isPaused = false;
+
     sf::Font font;
     if (!font.loadFromFile("arial.ttf")) {
         std::cerr << "Nie mozna zaladowac czcionki!" << std::endl;
@@ -171,6 +195,8 @@ int main() {
 
     Food food;
     Snake snake(food);
+
+    showSplashScreen(window, font);
 
     while (window.isOpen()) {
         sf::Event event;
@@ -190,7 +216,6 @@ int main() {
             if (timer < delay) continue;
             timer = 0.f;
 
-            if (snake.IsAlive()) { window.draw(gameOver); }
             if (!snake.IsAlive()) { continue; }
 
             // update game objects
@@ -207,6 +232,40 @@ int main() {
         {
             window.draw(pauseText);
         }
+        
+        if (!snake.IsAlive()) {
+            sf::Text gameOverText("KONIEC GRY", font, 64);
+            gameOverText.setFillColor(sf::Color::Red);
+            gameOverText.setPosition(200, 150);
+
+            sf::Text exitText("Nacisnij Esc, aby zakonczyc", font, 32);
+            exitText.setFillColor(sf::Color::White);
+            exitText.setPosition(200, 250);
+
+            bool waiting = true;
+            while (waiting)
+            {
+                sf::Event event;
+                while (window.pollEvent(event))
+                {
+                    if (event.type == sf::Event::Closed)
+                        window.close();
+
+                    if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+                    {
+                        window.close();
+                        waiting = false;
+                    }
+                }
+
+                window.clear();
+                window.draw(gameOverText);
+                window.draw(exitText);
+                window.display();
+            }
+        }
+
+        if (event.key.code == sf::Keyboard::Escape) window.close();
 
         window.display();
     }
